@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: marketminer-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        value: sqlite:///./marketminer.db
+      - key: CORS_ORIGINS
+        sync: false   # set to your frontend URL, e.g. https://marketminer.vercel.app
+  - type: web
+    name: marketminer-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false   # set to your backend URL, e.g. https://marketminer-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
